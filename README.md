@@ -11,6 +11,7 @@ Application is built for Composer. This makes setting up a new Slim Framework ap
 Run this command from the directory in which you want to install Voucher Pool application.
 
     git clone https://github.com/erdemkose/voucherpool.git
+    cd voucherpool
     php composer.phar install
 
 After the installation you will need to:
@@ -25,7 +26,7 @@ To run the application with PHP's built in server, you can run this command:
 
 	php composer.phar start
 
-After this command, you can visit the website at http://localhost:8080/
+After this command, you can visit the website at http://localhost:8080/index.html
 
 ##Running Tests
 
