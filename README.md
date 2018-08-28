@@ -20,7 +20,7 @@ After the installation you will need to:
 * Ensure `logs/` and `db/` folders are web writable.
 
 
-##Development Server
+## Development Server
 
 To run the application with PHP's built in server, you can run this command: 
 
@@ -28,7 +28,7 @@ To run the application with PHP's built in server, you can run this command:
 
 After this command, you can visit the website at http://localhost:8080/index.html
 
-##Running Tests
+## Running Tests
 
 Run this command in the application directory to run the test suite
 
