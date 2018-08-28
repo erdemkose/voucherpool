@@ -1,0 +1,230 @@
+<!--
+
+ Voucher Pool (https://voucherpool.erdemkose.com)
+
+ @link      https://github.com/erdemkose/voucherpool
+ @copyright Copyright (c) 2018 Erdem Köse
+ @license   https://github.com/erdemkose/voucherpool/blob/master/LICENSE (MIT License)
+
+-->
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+
+    <title>Special Offers - Voucher Pool</title>
+    <style>
+        body {
+            padding-bottom: 100px;
+        }
+        .stats-header {
+            font-size: 32px;
+            font-weight: 300;
+        }
+        .stats-value {
+            font-size: 24px;
+        }
+        .tab-pane {
+            padding-top: 50px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">Voucher Pool</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#globalNavbar" aria-controls="globalNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="globalNavbar">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="recipients.html">Recipients</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Special Offers <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="vouchers.html">Vouchers</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section class="jumbotron text-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm">
+                <div class="stats-header">Total Special Offers</div>
+                <div id="recordsTotal" class="stats-value">-</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <ul class="nav nav-tabs" id="special-offers-tab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="list-special-offers-tab" data-toggle="tab" href="#list-special-offers" role="tab" aria-controls="list-special-offers" aria-selected="true"><i class="far fa-list-alt"></i> List Special Offers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="create-special-offer-tab" data-toggle="tab" href="#create-special-offer" role="tab" aria-controls="create-special-offer" aria-selected="false"><i class="fas fa-plus"></i> Create Special Offer</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="list-special-offers" role="tabpanel" aria-labelledby="list-special-offers-tab">
+            <form id="list-special-offers-form">
+                <table id="special-offers-table" class="display table table-striped table-bordered table-hover" style="width:100%">
+                    <caption>List of special offers</caption>
+                    <thead>
+                    <tr>
+                        <th>id</th>
+                        <th>name</th>
+                        <th>discount</th>
+                        <th>operations</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="create-special-offer" role="tabpanel" aria-labelledby="create-special-offer-tab">
+            <form id="create-special-offer-form" class="form-inline">
+                <label class="sr-only" for="create-special-offer-form-name">Special Offer Name</label>
+                <input type="text" class="form-control mb-2 mr-sm-2"
+                       id="create-special-offer-form-name" name="name" placeholder="Special Offer Name" required>
+
+                <label class="sr-only" for="create-special-offer-form-discount">Discount</label>
+                <input type="text" class="form-control mb-2 mr-sm-2"
+                       id="create-special-offer-form-discount" name="discount" placeholder="Discount" required>
+
+                <button type="submit" class="btn btn-primary mb-2">Create Special Offer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/html" id="alert-template">
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <div class="alert-text"></div>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+</script>
+<script>
+    const API_PREFIX = '/api/v1';
+
+    function message(selector, text) {
+        $($('#alert-template').html()).insertBefore(selector).alert().find('.alert-text').text(text);
+    }
+
+    $.fn.extend({
+        "fadeText": function(text) {
+            $(this).fadeOut(function() {
+                $(this).text(text).fadeIn();
+            });
+        }
+    });
+
+    const $table = $('#special-offers-table').DataTable({
+        columns: [
+            { "data": "id", "title": "#" },
+            { "data": "name", "title": "Name" },
+            { "data": "discount", "title": "Discount" },
+            {
+                "data": "id",
+                "title": "Operations",
+                "render": function ( data, type, row, meta ) {
+                    return '<a href="#" data-method="delete" data-id="'+ data +'"><i class="fas fa-trash"></i></a>';
+                }
+            }
+        ],
+        pageLength: 10,
+        ordering: false,
+        processing: true,
+        select: true,
+        serverSide: true,
+        ajax: function(data, callback, settings) {
+            delete data['columns'];
+
+            $.ajax(API_PREFIX +'/special-offers', {
+                method: "GET",
+                dataType: "json",
+                data: data,
+                success: function(response) {
+                    $("#recordsTotal").fadeText(response.recordsTotal);
+                    callback(response);
+                }
+            });
+        }
+    });
+
+    $table.on('click', '[data-method="delete"]', function (e) {
+        e.preventDefault();
+
+        let response = confirm("Are you sure you want to delete this special offer?\n"+
+            "\n"+
+            "All related vouchers will also be deleted.");
+
+        if(response) {
+            let id = $(this).data("id");
+            $.ajax(API_PREFIX +'/special-offers/'+ id, {
+                method: "DELETE",
+                dataType: "json",
+                success: function() {
+                    message('#list-special-offers-form', 'Special Offer (#'+ id +') is deleted.');
+                    $table.ajax.reload();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    let response = JSON.parse(jqXHR.responseText);
+                    message('#list-special-offers-form', 'Error: '+ response.error.message);
+                }
+            });
+        }
+    });
+
+    $('#create-special-offer-form').submit(function(e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+        let data = {
+            "name": formData.get('name'),
+            "discount": formData.get('discount'),
+        };
+
+        $.ajax(API_PREFIX +'/special-offers', {
+            method: "POST",
+            data: data,
+            dataType: "json",
+            success: function(response) {
+                message('#create-special-offer-form', 'Special Offer ('+ data["name"] +') is created.');
+                $table.ajax.reload();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                let response = JSON.parse(jqXHR.responseText);
+                message('#create-special-offer-form', 'Error: '+ response.error.message);
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+composer.phar
+docker-compose.yml
+.idea
+/vendor/
+/logs/*
+!/logs/README.md

@@ -1,0 +1,385 @@
+<!--
+
+ Voucher Pool (https://voucherpool.erdemkose.com)
+
+ @link      https://github.com/erdemkose/voucherpool
+ @copyright Copyright (c) 2018 Erdem Köse
+ @license   https://github.com/erdemkose/voucherpool/blob/master/LICENSE (MIT License)
+
+-->
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+
+    <title>Vouchers - Voucher Pool</title>
+    <style>
+        body {
+            padding-bottom: 100px;
+        }
+        .stats-header {
+            font-size: 32px;
+            font-weight: 300;
+        }
+        .stats-value {
+            font-size: 24px;
+        }
+        .tab-pane {
+            padding-top: 50px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">Voucher Pool</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#globalNavbar" aria-controls="globalNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="globalNavbar">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="recipients.html">Recipients</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="special-offers.html">Special Offers</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Vouchers <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section class="jumbotron text-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm">
+                <div class="stats-header">Total Vouchers</div>
+                <div id="recordsTotal" class="stats-value">-</div>
+            </div>
+            <div class="col-sm">
+                <div class="stats-header">Unused Vouchers</div>
+                <div id="unused" class="stats-value">-</div>
+            </div>
+            <div class="col-sm">
+                <div class="stats-header">Used Vouchers</div>
+                <div id="used" class="stats-value">-</div>
+            </div>
+            <div class="col-sm">
+                <div class="stats-header">Today Expiring Vouchers</div>
+                <div id="today" class="stats-value">-</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <ul class="nav nav-tabs" id="vouchers-tab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="list-vouchers-tab" data-toggle="tab" href="#list-vouchers" role="tab" aria-controls="list-vouchers" aria-selected="true"><i class="far fa-list-alt"></i> List Vouchers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="create-vouchers-tab" data-toggle="tab" href="#create-vouchers" role="tab" aria-controls="create-vouchers" aria-selected="false"><i class="fas fa-plus"></i> Create Vouchers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="use-a-voucher-tab" data-toggle="tab" href="#use-a-voucher" role="tab" aria-controls="use-a-voucher" aria-selected="false"><i class="far fa-edit"></i> Use A Voucher</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="list-vouchers" role="tabpanel" aria-labelledby="list-vouchers-tab">
+            <form id="list-vouchers-form">
+                <table id="vouchers-table" class="display table table-bordered table-hover" style="width:100%">
+                    <caption>List of vouchers</caption>
+                    <thead>
+                    <tr>
+                        <th colspan="4">Voucher</th>
+                        <th colspan="2">Recipient</th>
+                        <th colspan="2">Special Offer</th>
+                        <th>Operations</th>
+                    </tr>
+                    <tr>
+                        <th>id</th>
+                        <th>code</th>
+                        <th>expiration</th>
+                        <th>used on</th>
+                        <th>name</th>
+                        <th>email</th>
+                        <th>name</th>
+                        <th>discount</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="create-vouchers" role="tabpanel" aria-labelledby="create-vouchers-tab">
+            <form id="create-vouchers-form">
+                <div class="form-group">
+                    <label for="special-offer-select">Select a special offer</label>
+                    <select name="special_offer_id" id="special-offer-select" class="form-control form-control-lg">
+                        <option value="-1">Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="recipients-select">Select recipients to create vouchers</label>
+                    <select multiple name="recipient_ids" id="recipients-select" class="form-control form-control-lg">
+                        <option value="-1">Loading...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="expiration-date">Expiration Date</label>
+                    <input type="date" id="expiration-date" name="expiration_date" class="form-control form-control-lg"
+                           value=""
+                           min=""
+                           max="" />
+                </div>
+                <button type="submit" class="btn btn-primary">Create vouchers</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="use-a-voucher" role="tabpanel" aria-labelledby="use-a-voucher-tab">
+            <form id="use-voucher-form" class="form-inline">
+                <label class="sr-only" for="use-voucher-form-email">E-Mail Address</label>
+                <input type="email" class="form-control mb-2 mr-sm-2"
+                       id="use-voucher-form-email" name="email" placeholder="E-Mail Address" required>
+
+                <label class="sr-only" for="use-voucher-form-code">Voucher Code</label>
+                <input type="text" class="form-control mb-2 mr-sm-2"
+                       id="use-voucher-form-code" name="code" placeholder="Voucher Code"
+                       maxlength="8"
+                       minlength="8"
+                       required>
+
+                <button type="submit" class="btn btn-primary mb-2">Use Voucher</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/html" id="alert-template">
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <div class="alert-text"></div>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+</script>
+<script>
+    const API_PREFIX = '/api/v1';
+    const API_LIST_VOUCHERS = "/api/v1/vouchers";
+
+    function message(selector, text) {
+        $($('#alert-template').html()).insertBefore(selector).alert().find('.alert-text').text(text);
+    }
+
+    $.fn.extend({
+        "fadeText": function(text) {
+            $(this).fadeOut(function() {
+                $(this).text(text).fadeIn();
+            });
+        }
+    });
+
+    const $table = $('#vouchers-table').DataTable({
+        columns: [
+            { "data": "id" },
+            {
+                "data": "code",
+                "render": function (data, type, row, meta) {
+                    return "<kbd>" + data +"</kbd>";
+                }
+            },
+            { "data": "expiration_date" },
+            { "data": "usage_date" },
+
+            { "data": "recipient.name" },
+            { "data": "recipient.email" },
+
+            { "data": "special_offer.name" },
+            { "data": "special_offer.discount" },
+            {
+                "data": "id",
+                "title": "Operations",
+                "render": function ( data, type, row, meta ) {
+                    let html = '<a href="#" data-method="delete" data-id="'+ data +'"><i class="fas fa-trash"></i></a>';
+
+                    if(!row.is_used && !row.is_expired) {
+                        html += '<a href="#" data-method="put" data-code="'+ row.code +'" data-email="'+ row.recipient.email +'"><i class="fas fa-hand-holding-usd"></i></a>';
+                    }
+
+                    return html;
+                }
+            }
+        ],
+        pageLength: 10,
+        ordering: false,
+        processing: true,
+        responsive: true,
+        serverSide: true,
+        ajax: function(data, callback, settings) {
+            delete data['columns'];
+
+            $.ajax(API_LIST_VOUCHERS, {
+                method: "GET",
+                dataType: "json",
+                data: data,
+                success: function(response) {
+                    $("#recordsTotal").fadeText(response.recordsTotal);
+                    $("#unused").fadeText(response.unused);
+                    $("#used").fadeText(response.used);
+                    $("#today").fadeText(response.today);
+
+                    response.data = response.data.map(function(voucher) {
+                        let rowClass = "";
+
+                        if (voucher.is_used) {
+                            rowClass = "table-success";
+                        } else if(voucher.is_expired) {
+                            rowClass = "table-danger";
+                        }
+                        voucher.DT_RowClass = rowClass;
+
+                        return voucher;
+                    });
+
+                    callback(response);
+                }
+            });
+        }
+    });
+
+    $table.on('click', '[data-method="delete"]', function (e) {
+        e.preventDefault();
+
+        let response = confirm("Are you sure you want to delete this voucher?");
+
+        if(response) {
+            let id = $(this).data("id");
+            $.ajax(API_PREFIX +'/vouchers/'+ id, {
+                method: "DELETE",
+                dataType: "json",
+                success: function() {
+                    message('#list-vouchers-form', 'Voucher (#'+ id +') is deleted.');
+                    $table.ajax.reload();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    let response = JSON.parse(jqXHR.responseText);
+                    message('#list-vouchers-form', 'Error: '+ response.error.message);
+                }
+            });
+        }
+    });
+
+    $table.on('click', '[data-method="put"]', function (e) {
+        e.preventDefault();
+
+        let response = confirm("Are you sure you want to mark this voucher as used?");
+
+        if(response) {
+            let code = $(this).data("code");
+            let email = $(this).data("email");
+            $.ajax(API_PREFIX +'/recipients/'+ encodeURIComponent(email) + '/vouchers/'+ encodeURIComponent(code), {
+                method: "PUT",
+                dataType: "json",
+                success: function() {
+                    message('#list-vouchers-form', 'Voucher ('+ code +') is marked as used.');
+                    $table.ajax.reload();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    let response = JSON.parse(jqXHR.responseText);
+                    message('#list-vouchers-form', 'Error: '+ response.error.message);
+                }
+            });
+        }
+    });
+
+    $("#create-vouchers-tab").on("show.bs.tab", function () {
+        $.getJSON("/api/v1/recipients", function(recipients) {
+            $("#recipients-select option").remove();
+            recipients.data.forEach(function (recipient) {
+                $("<option>").attr("value", recipient.id).text(recipient.name).appendTo("#recipients-select");
+            });
+        });
+        $.getJSON("/api/v1/special-offers", function(special_offers) {
+            $("#special-offer-select option").remove();
+            special_offers.data.forEach(function (special_offer) {
+                $("<option>").attr("value", special_offer.id).text(special_offer.name).appendTo("#special-offer-select");
+            });
+        });
+        let today = new Date().toISOString().slice(0, 10);
+        $("#expiration-date").attr("value", today).attr("min", today);
+    });
+
+    $("#create-vouchers-form").submit(function(e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+        let data = {
+            "special_offer_id": formData.get('special_offer_id'),
+            "recipient_ids": formData.getAll('recipient_ids'),
+            "expiration_date": formData.get('expiration_date'),
+        };
+
+        $.ajax(API_PREFIX +'/vouchers', {
+            method: "POST",
+            data: data,
+            dataType: "json",
+            success: function(response) {
+                if(response.error === undefined) {
+                    let count = response.length;
+                    message('#create-vouchers-form', 'Created '+ count +' voucher(s).');
+                }
+                $table.ajax.reload();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                let response = JSON.parse(jqXHR.responseText);
+                message('#create-vouchers-form', 'Error: '+ response.error.message);
+            }
+        });
+    });
+
+    $('#use-voucher-form').submit(function(e) {
+        e.preventDefault();
+
+        let email = $('#use-voucher-form-email').val();
+        let code  = $('#use-voucher-form-code').val();
+
+        $.ajax(API_PREFIX +'/recipients/'+ encodeURIComponent(email) + '/vouchers/'+ encodeURIComponent(code), {
+            method: "PUT",
+            dataType: "json",
+            success: function(response) {
+                if(response.error === undefined) {
+                    message('#use-voucher-form', 'Voucher ('+ code +') is marked as used.');
+                } else {
+                    message('#use-voucher-form', 'Error: '+ response.error.message);
+                }
+                $table.ajax.reload();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                let response = JSON.parse(jqXHR.responseText);
+                message('#use-voucher-form', 'Error: '+ response.error.message);
+            }
+        });
+    });
+</script>
+</body>
+</html>
