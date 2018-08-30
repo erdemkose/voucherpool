@@ -131,12 +131,48 @@
     </div>
 </script>
 <script>
-    const API_PREFIX = '/api/v1';
+    /**
+     * Helper function to access Voucher API
+     *
+     * @param method
+     * @param endpoint
+     * @param requestPayload
+     * @param successCallback
+     * @param errorCallback
+     */
+    function VoucherAPI(method, endpoint, requestPayload, successCallback, errorCallback) {
+        // If the method is GET, parameters are used in Query String.
+        // Otherwise, we need to encode the data as JSON
+        if (method.toUpperCase() !== "GET") {
+            requestPayload = JSON.stringify(requestPayload);
+        }
 
-    function message(selector, text) {
-        $($('#alert-template').html()).insertBefore(selector).alert().find('.alert-text').text(text);
+        $.ajax('/api/v1' + endpoint, {
+            "method": method,
+            "contentType": "application/json; charset=utf-8",
+            "data": requestPayload,
+            "dataType": "json",
+            "success": successCallback ? successCallback : null,
+            "error": errorCallback ? errorCallback : null
+        });
     }
 
+    /**
+     * Create a new message
+     *
+     * @param selector
+     * @param text
+     */
+    function message(selector, text) {
+        let alertHTML = $('#alert-template').html();
+        $(alertHTML).insertBefore(selector).alert().find('.alert-text').text(text);
+    }
+
+    /**
+     * Add fade function to jQuery
+     *
+     * This function is used to animate text update
+     */
     $.fn.extend({
         "fadeText": function(text) {
             $(this).fadeOut(function() {
@@ -145,6 +181,11 @@
         }
     });
 
+    /**
+     * Create DataTable to list Special Offers
+     *
+     * @type {jQuery}
+     */
     const $table = $('#special-offers-table').DataTable({
         columns: [
             { "data": "id", "title": "#" },
@@ -166,18 +207,18 @@
         ajax: function(data, callback, settings) {
             delete data['columns'];
 
-            $.ajax(API_PREFIX +'/special-offers', {
-                method: "GET",
-                dataType: "json",
-                data: data,
-                success: function(response) {
+            VoucherAPI("GET", "/special-offers", data,
+                function(response) {
                     $("#recordsTotal").fadeText(response.recordsTotal);
                     callback(response);
                 }
-            });
+            );
         }
     });
 
+    /**
+     * Click handler to delete a special offer
+     */
     $table.on('click', '[data-method="delete"]', function (e) {
         e.preventDefault();
 
@@ -187,43 +228,41 @@
 
         if(response) {
             let id = $(this).data("id");
-            $.ajax(API_PREFIX +'/special-offers/'+ id, {
-                method: "DELETE",
-                dataType: "json",
-                success: function() {
+
+            VoucherAPI("DELETE", "/special-offers/"+ id, null,
+                function() {
                     message('#list-special-offers-form', 'Special Offer (#'+ id +') is deleted.');
                     $table.ajax.reload();
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+                function(jqXHR, textStatus, errorThrown) {
                     let response = JSON.parse(jqXHR.responseText);
                     message('#list-special-offers-form', 'Error: '+ response.error.message);
                 }
-            });
+            );
         }
     });
 
+    /**
+     * Submit handler to create new special offer
+     */
     $('#create-special-offer-form').submit(function(e) {
         e.preventDefault();
 
-        let formData = new FormData(this);
         let data = {
-            "name": formData.get('name'),
-            "discount": formData.get('discount'),
+            "name": $("#create-special-offer-form-name").val(),
+            "discount": $("#create-special-offer-form-discount").val(),
         };
 
-        $.ajax(API_PREFIX +'/special-offers', {
-            method: "POST",
-            data: data,
-            dataType: "json",
-            success: function(response) {
+        VoucherAPI("POST", "/special-offers", data,
+            function() {
                 message('#create-special-offer-form', 'Special Offer ('+ data["name"] +') is created.');
                 $table.ajax.reload();
             },
-            error: function(jqXHR, textStatus, errorThrown) {
+            function(jqXHR, textStatus, errorThrown) {
                 let response = JSON.parse(jqXHR.responseText);
                 message('#create-special-offer-form', 'Error: '+ response.error.message);
             }
-        });
+        );
     });
 </script>
 </body>
