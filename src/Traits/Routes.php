@@ -38,7 +38,7 @@ trait Routes
                 RecipientsController::class .':getVoucherByEmail');
 
             // Redeem a voucher of a specific recipient
-            $this->put('/recipients/{email}/vouchers/{code}',
+            $this->patch('/recipients/{email}/vouchers/{code}',
                 RecipientsController::class .':redeemVoucherByEmail');
         });
     }
