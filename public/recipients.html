@@ -155,12 +155,46 @@
     </div>
 </script>
 <script>
-    const API_PREFIX = '/api/v1';
+    /**
+     * Helper function to access Voucher API
+     *
+     * @param method
+     * @param endpoint
+     * @param requestPayload
+     * @param successCallback
+     * @param errorCallback
+     */
+    function VoucherAPI(method, endpoint, requestPayload, successCallback, errorCallback) {
+        if (method.toUpperCase() !== "GET") {
+            requestPayload = JSON.stringify(requestPayload);
+        }
 
-    function message(selector, text) {
-        $($('#alert-template').html()).insertBefore(selector).alert().find('.alert-text').text(text);
+        $.ajax('/api/v1' + endpoint, {
+            "method": method,
+            "contentType": "application/json; charset=utf-8",
+            "data": requestPayload,
+            "dataType": "json",
+            "success": successCallback ? successCallback : null,
+            "error": errorCallback ? errorCallback : null
+        });
     }
 
+    /**
+     * Create a new message
+     *
+     * @param selector
+     * @param text
+     */
+    function message(selector, text) {
+        let alertHTML = $('#alert-template').html();
+        $(alertHTML).insertBefore(selector).alert().find('.alert-text').text(text);
+    }
+
+    /**
+     * Add fade function to jQuery
+     *
+     * This function is used to animate text update
+     */
     $.fn.extend({
         "fadeText": function(text) {
             $(this).fadeOut(function() {
@@ -169,6 +203,11 @@
         }
     });
 
+    /**
+     * Create DataTable to list Recipients
+     *
+     * @type {jQuery}
+     */
     const $table = $('#recipients-table').DataTable({
         columns: [
             { "data": "id", "title": "#" },
@@ -196,21 +235,18 @@
         ajax: function(data, callback, settings) {
             delete data['columns'];
 
-            $.ajax(API_PREFIX +'/recipients', {
-                method: "GET",
-                dataType: "json",
-                data: data,
-                success: function(response) {
-                    $("#recordsTotal").fadeOut(function() {
-                        $(this).text(response.recordsTotal).fadeIn();
-                    });
-
+            VoucherAPI('GET', '/recipients', data,
+                function(response) {
+                    $("#recordsTotal").fadeText(response.recordsTotal);
                     callback(response);
                 }
-            });
+            );
         }
     });
 
+    /**
+     * Click handler to delete a recipient
+     */
     $table.on('click', '[data-method="delete"]', function (e) {
         e.preventDefault();
 
@@ -220,46 +256,48 @@
 
         if(response) {
             let id = $(this).data("id");
-            $.ajax(API_PREFIX +'/recipients/'+ id, {
-                method: "DELETE",
-                dataType: "json",
-                success: function() {
+
+            VoucherAPI("DELETE", "/recipients/"+ id, {},
+                function() {
                     message('#list-recipients-form', 'Recipient (#'+ id +') is deleted.');
                     $table.ajax.reload();
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+                function(jqXHR, textStatus, errorThrown) {
                     let response = JSON.parse(jqXHR.responseText);
                     message('#list-recipients-form', 'Error: '+ response.error.message);
                 }
-            });
+            );
         }
     });
 
+    /**
+     * Click handler to list vouchers of a recipient
+     */
     $table.on('click', '.recipient', function(e) {
         e.preventDefault();
 
         let email = $(this).data("email");
         let name = $(this).text();
-        let receipentId = $(this).data("id");
-        let $tab = $("#recipients-tab #recipient-"+ receipentId);
+        let recipientId = $(this).data("id");
+        let $tab = $("#recipients-tab #recipient-"+ recipientId);
 
         if($tab.length > 0) {
             $tab.tab("show");
         } else {
             $("<li>").addClass("nav-item")
-                .attr("id", "recipient-"+ receipentId)
+                .attr("id", "recipient-"+ recipientId)
                 .append(
                     $("<a>").addClass("nav-link")
                         .attr("data-toggle", "tab")
-                        .attr("href", "#recipient-"+ receipentId +"-vouchers")
+                        .attr("href", "#recipient-"+ recipientId +"-vouchers")
                         .html('<i class="far fa-list-alt"></i> '+ name + ' &nbsp;')
                         .append(
                             $("<button>").attr("type", "button")
                                 .addClass("close")
                                 .html('<span aria-hidden="true">&times;</span>')
                                 .click(function() {
-                                    $("#recipient-"+ receipentId).remove();
-                                    $("#recipient-"+ receipentId +"-vouchers").remove();
+                                    $("#recipient-"+ recipientId).remove();
+                                    $("#recipient-"+ recipientId +"-vouchers").remove();
                                     $("#list-recipients-tab").tab("show");
                                 })
                         )
@@ -267,14 +305,14 @@
             .appendTo("#recipients-tab");
 
             $("<div>").addClass("tab-pane fade")
-                .attr("id", "recipient-"+ receipentId +"-vouchers")
+                .attr("id", "recipient-"+ recipientId +"-vouchers")
                 .attr("role", "tabpanel")
                 .append(
-                    $("#recipient-vouchers-table").clone().attr("id", "recipient-"+ receipentId +"-vouchers-table").show()
+                    $("#recipient-vouchers-table").clone().attr("id", "recipient-"+ recipientId +"-vouchers-table").show()
                 )
                 .appendTo("#recipients-tab-content");
 
-            let $recipientVouchersTable = $("#recipient-"+ receipentId +"-vouchers table").DataTable({
+            let $recipientVouchersTable = $("#recipient-"+ recipientId +"-vouchers table").DataTable({
                 destroy: true,
                 columns: [
                     { "data": "id" },
@@ -299,7 +337,7 @@
                             let html = '<a href="#" data-method="delete" data-id="'+ data +'"><i class="fas fa-trash"></i></a>';
 
                             if(!row.is_used && !row.is_expired) {
-                                html += '<a href="#" data-method="put" data-code="'+ row.code +'" data-email="'+ row.recipient.email +'"><i class="fas fa-hand-holding-usd"></i></a>';
+                                html += '<a href="#" data-method="patch" data-code="'+ row.code +'" data-email="'+ row.recipient.email +'"><i class="fas fa-hand-holding-usd"></i></a>';
                             }
 
                             return html;
@@ -314,27 +352,21 @@
                 ajax: function(data, callback, settings) {
                     delete data['columns'];
 
-                    $.ajax(API_PREFIX + "/recipients/" + email + "/vouchers", {
-                        method: "GET",
-                        dataType: "json",
-                        data: data,
-                        success: function(response) {
+                    VoucherAPI("GET", "/recipients/" + email + "/vouchers", data,
+                        function(response) {
                             response.data = response.data.map(function(voucher) {
-                                let rowClass = "";
-
                                 if (voucher.is_used) {
-                                    rowClass = "table-success";
+                                    voucher.DT_RowClass = "table-success";
                                 } else if(voucher.is_expired) {
-                                    rowClass = "table-danger";
+                                    voucher.DT_RowClass = "table-danger";
                                 }
-                                voucher.DT_RowClass = rowClass;
 
                                 return voucher;
                             });
 
                             callback(response);
                         }
-                    });
+                    );
                 }
             });
 
@@ -345,70 +377,67 @@
 
                 if(response) {
                     let voucherId = $(this).data("id");
-                    $.ajax(API_PREFIX +'/vouchers/'+ voucherId, {
-                        method: "DELETE",
-                        dataType: "json",
-                        success: function() {
-                            message("#recipient-"+ receipentId +"-vouchers-table_wrapper", 'Voucher (#'+ voucherId +') is deleted.');
+
+                    VoucherAPI("DELETE", "/vouchers/"+ voucherId, null,
+                        function() {
+                            message("#recipient-"+ recipientId +"-vouchers-table_wrapper", 'Voucher (#'+ voucherId +') is deleted.');
                             $recipientVouchersTable.ajax.reload();
                         },
-                        error: function(jqXHR, textStatus, errorThrown) {
+                        function(jqXHR, textStatus, errorThrown) {
                             let response = JSON.parse(jqXHR.responseText);
-                            message("#recipient-"+ receipentId +"-vouchers-table_wrapper", 'Error: '+ response.error.message);
+                            message("#recipient-"+ recipientId +"-vouchers-table_wrapper", 'Error: '+ response.error.message);
                         }
-                    });
+                    );
                 }
             });
 
-            $recipientVouchersTable.on('click', '[data-method="put"]', function (e) {
+            $recipientVouchersTable.on('click', '[data-method="patch"]', function (e) {
                 e.preventDefault();
 
                 let response = confirm("Are you sure you want to mark this voucher as used?");
 
                 if(response) {
-                    let code = $(this).data("code");
-                    let email = $(this).data("email");
-                    $.ajax(API_PREFIX +'/recipients/'+ encodeURIComponent(email) + '/vouchers/'+ encodeURIComponent(code), {
-                        method: "PUT",
-                        dataType: "json",
-                        success: function() {
-                            message("#recipient-"+ receipentId +"-vouchers-table_wrapper", 'Voucher ('+ code +') is marked as used.');
+                    let code = encodeURI($(this).data("code"));
+                    let email = encodeURI($(this).data("email"));
+
+                    VoucherAPI("PATCH", "/recipients/"+ email + "/vouchers/"+ code, {"is_used": true},
+                        function() {
+                            message("#recipient-"+ recipientId +"-vouchers-table_wrapper", 'Voucher ('+ code +') is marked as used.');
                             $recipientVouchersTable.ajax.reload();
                         },
-                        error: function(jqXHR, textStatus, errorThrown) {
+                        function(jqXHR, textStatus, errorThrown) {
                             let response = JSON.parse(jqXHR.responseText);
-                            message("#recipient-"+ receipentId +"-vouchers-table_wrapper", 'Error: '+ response.error.message);
+                            message("#recipient-"+ recipientId +"-vouchers-table_wrapper", 'Error: '+ response.error.message);
                         }
-                    });
+                    );
                 }
             });
 
-            $("#recipient-"+ receipentId).find("a").tab("show");
+            $("#recipient-"+ recipientId).find("a").tab("show");
         }
     });
 
+    /**
+     * Submit handler to create new recipient
+     */
     $('#create-recipient-form').submit(function(e) {
         e.preventDefault();
 
-        let formData = new FormData(this);
         let data = {
-            "name": formData.get('name'),
-            "email": formData.get('email'),
+            "name": $("#create-recipient-form-name").val(),
+            "email": $("#create-recipient-form-email").val()
         };
 
-        $.ajax(API_PREFIX +'/recipients', {
-            method: "POST",
-            data: data,
-            dataType: "json",
-            success: function(response) {
+        VoucherAPI("POST", "/recipients", data,
+            function() {
                 message('#create-recipient-form', 'Recipient ('+ data["name"] +') is created.');
                 $table.ajax.reload();
             },
-            error: function(jqXHR, textStatus, errorThrown) {
+            function(jqXHR, textStatus, errorThrown) {
                 let response = JSON.parse(jqXHR.responseText);
                 message('#create-recipient-form', 'Error: '+ response.error.message);
             }
-        });
+        );
     });
 </script>
 </body>
