@@ -36,7 +36,7 @@ abstract class APIBaseTestCase extends TestCase
             // Monolog settings
             'logger' => [
                 'name' => 'voucherpool',
-                'path' => __DIR__ .'/../logs/app.log',
+                'path' => 'php://temp',
                 'level' => \Monolog\Logger::DEBUG,
             ],
         ],
