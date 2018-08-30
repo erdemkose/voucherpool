@@ -12,7 +12,7 @@ Run this command from the directory in which you want to install Voucher Pool ap
 
     git clone https://github.com/erdemkose/voucherpool.git
     cd voucherpool
-    php composer.phar install
+    composer install
 
 After the installation you will need to:
 
@@ -24,7 +24,7 @@ After the installation you will need to:
 
 To run the application with PHP's built in server, you can run this command: 
 
-	php composer.phar start
+	composer start
 
 After this command, you can visit the website at http://localhost:8080/index.html
 
@@ -32,6 +32,21 @@ After this command, you can visit the website at http://localhost:8080/index.htm
 
 Run this command in the application directory to run the test suite
 
-	php composer.phar test
+	composer test
+
+## Run in a Docker container
+
+To easily test the application in a Docker container, you can run the following commands. After you run the container image, you can access the application at http://localhost/
+
+### Build container from GitHub repository
+
+    docker build -t erdemkose/voucherpool:latest https://github.com/erdemkose/voucherpool.git
+    docker run -p 80:80 erdemkose/voucherpool:latest
+
+### Build container from downloaded source
+
+    cd voucherpool
+    docker build -t erdemkose/voucherpool:latest .
+    docker run -p 80:80 erdemkose/voucherpool:latest
 
 That's it! 
