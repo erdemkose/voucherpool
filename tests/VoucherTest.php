@@ -235,7 +235,7 @@ class VoucherTest extends APIBaseTestCase
 
         $email = $recipient->email;
         $code = $vouchers[0]->code;
-        $response = $this->runApp('PUT', '/api/v1/recipients/'. $email .'/vouchers/'. $code);
+        $response = $this->runApp('PATCH', '/api/v1/recipients/'. $email .'/vouchers/'. $code);
         $voucher = json_decode((string)$response->getBody());
 
         $this->assertEquals(200, $response->getStatusCode());
@@ -254,7 +254,7 @@ class VoucherTest extends APIBaseTestCase
 
         $email = $recipient->email;
         $code = $vouchers[0]->code .'XYZ';
-        $response = $this->runApp('PUT', '/api/v1/recipients/'. $email .'/vouchers/'. $code);
+        $response = $this->runApp('PATCH', '/api/v1/recipients/'. $email .'/vouchers/'. $code);
         $responseJson = json_decode((string)$response->getBody());
 
         $this->assertEquals(404, $response->getStatusCode());
@@ -272,7 +272,7 @@ class VoucherTest extends APIBaseTestCase
 
         $email = $recipient->email. 'XYZ';
         $code = $vouchers[0]->code;
-        $response = $this->runApp('PUT', '/api/v1/recipients/'. $email .'/vouchers/'. $code);
+        $response = $this->runApp('PATCH', '/api/v1/recipients/'. $email .'/vouchers/'. $code);
         $responseJson = json_decode((string)$response->getBody());
 
         $this->assertEquals(404, $response->getStatusCode());
