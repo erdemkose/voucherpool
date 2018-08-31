@@ -30,7 +30,7 @@ trait Dependencies {
         $container = $this->getContainer();
 
         // change the default not found handler.
-        $c['notFoundHandler'] = function (ContainerInterface $c) {
+        $container['notFoundHandler'] = function (ContainerInterface $c) {
             return function (Request $request, Response $response) use ($c) {
                 $logger = $c->get('logger');
                 $logger->error('Requested path not found!', [
